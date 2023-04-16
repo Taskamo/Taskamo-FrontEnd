@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #242E33;
+  color: #FFFFFF;
+}
+
+.ant-picker-panel {
+  background-color: #242E33 !important;
+
+  .ant-picker-calendar-date-value {
+    color: #ddd !important;
+  }
+
+  .ant-picker-cell-selected {
+    &>div {
+      background-color: #242e33 !important;
+    }
+
+    .ant-picker-calendar-date-value {
+      color: #4F9DFF !important;
+    }
+  }
+}
+
+:where(.css-dev-only-do-not-override-1szgysx).ant-picker-calendar .ant-picker-content th {
+  color: #ddd !important;
+}

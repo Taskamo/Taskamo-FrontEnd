@@ -1,0 +1,42 @@
+.sidebar {
+  @apply flex flex-col max-w-xs w-full min-h-full bg-boxgroundA700 rounded-lg py-6 px-2;
+
+  &__items {
+    @apply flex gap-4 px-4 py-3 rounded-lg;
+    transition: background-color .5s ease, opacity .5s ease;
+    cursor: pointer;
+
+    &:not(.sidebar__items--logout) {
+      @apply mb-4;
+    }
+
+    &:hover {
+      @apply bg-boxgroundA700;
+    }
+
+    &--logout {
+      @apply text-red-500 mt-auto;
+
+      svg path {
+        @apply stroke-red-500;
+      }
+
+      &:hover {
+        @apply bg-redA10;
+      }
+    }
+
+    &--active {
+      @apply bg-white text-blackA500;
+
+      &:hover {
+        @apply bg-white text-blackA500;
+        opacity: .8;
+      }
+
+      svg path {
+        @apply stroke-primaryA500;
+      }
+    }
+  }
+}
