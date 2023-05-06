@@ -10,6 +10,7 @@ export { default as AddSquare } from "./AddSquare";
 export { default as Add } from "./Add";
 export { default as Additem } from "./Additem";
 export { default as Airdrop } from "./Airdrop";
+export { default as Android } from "./Android";
 export { default as AirplaneSquare } from "./AirplaneSquare";
 export { default as Airplane } from "./Airplane";
 export { default as Airpod } from "./Airpod";

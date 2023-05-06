@@ -3,28 +3,106 @@
 @tailwind utilities;
 
 body {
-  background-color: #242E33;
-  color: #FFFFFF;
+  background-color: #242e33;
+  color: #ffffff;
 }
 
 .ant-picker-panel {
-  background-color: #242E33 !important;
+  background-color: #242e33 !important;
 
   .ant-picker-calendar-date-value {
     color: #ddd !important;
   }
 
   .ant-picker-cell-selected {
-    &>div {
+    & > div {
       background-color: #242e33 !important;
     }
 
     .ant-picker-calendar-date-value {
-      color: #4F9DFF !important;
+      color: #4f9dff !important;
     }
   }
 }
 
-:where(.css-dev-only-do-not-override-1szgysx).ant-picker-calendar .ant-picker-content th {
+.ant-picker-panel-layout .ant-picker-panel {
+  background-color: unset !important;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  background-color: initial;
+}
+
+:where(.css-dev-only-do-not-override-1szgysx).ant-picker-calendar
+  .ant-picker-content
+  th {
   color: #ddd !important;
+}
+
+.ant-float-btn-icon {
+  width: unset !important;
+}
+
+.ant-btn-default {
+  background-color: transparent !important;
+}
+
+.ant-upload-wrapper.ant-upload-picture-circle-wrapper.avatar-uploader {
+  display: flex;
+  justify-content: center;
+}
+
+.ant-picker-calendar-header {
+  // background-color: transparent !important;
+}
+
+.rbc-calendar {
+  .rbc-btn-group {
+    display: none;
+  }
+  .rbc-time-view {
+    border: none;
+  }
+  .rbc-timeslot-group {
+    border: none;
+    min-height: 100px !important;
+  }
+  .rbc-time-header {
+    border: none;
+  }
+  .rbc-time-content {
+    border: none;
+  }
+  .rbc-today {
+    background-color: #ffffff0d !important;
+  }
+  .rbc-time-slot {
+    border-color: #11181a80 !important;
+  }
+  .rbc-events-container {
+    border-color: #11181a80 !important;
+  }
+  .rbc-time-header {
+    display: none;
+  }
+  .rbc-label {
+    color: #ffffff94;
+  }
+  .rbc-current-time-indicator {
+    background-color: #4f9dff !important;
+  }
+  .rbc-toolbar {
+    display: none;
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(to left, #30cfd0 0%, #330867 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }

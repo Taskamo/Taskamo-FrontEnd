@@ -1,155 +1,284 @@
 "use client";
+import {
+  CreateTodoApi,
+  DeleteTodoApi,
+  GetTodoApi,
+  UpdateTodoApi,
+} from "@/api/list";
+import SvgAdd from "@/assets/icons/Add";
+import {
+  Button,
+  Divider,
+  FloatButton,
+  Form,
+  Input,
+  message,
+  Modal,
+} from "antd";
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useMutation, useQuery } from "react-query";
 
-// fake data generator
-const getItems = (count: any, offset = 0) =>
-  Array.from({ length: count }, (v, k) => k).map((k) => ({
-    id: `item-${k + offset}-${new Date().getTime()}`,
-    content: `item ${k + offset}`,
-  }));
+export default function TodoPage() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const { data, refetch } = useQuery({
+    queryFn: () => GetTodoApi(),
+  });
+  const [form] = Form.useForm();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<"create" | "update">("create");
 
-const reorder = (list: any, startIndex: any, endIndex: any) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
+  const { mutateAsync: UpdateTodo } = useMutation({
+    mutationFn: ({ id, updateData }: { id: string; updateData: any }) =>
+      UpdateTodoApi({ id, data: updateData }),
+    onSuccess(data, variables, context) {
+      messageApi.open({
+        type: "success",
+        content: "Task Update Successfuly",
+      });
+      setIsModalOpen(false);
+      form.resetFields();
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    },
+  });
 
-  return result;
-};
+  const { mutateAsync: DeleteTodo } = useMutation({
+    mutationFn: (id: string) => DeleteTodoApi(id),
+    onSuccess(data, variables, context) {
+      messageApi.open({
+        type: "success",
+        content: data.data,
+      });
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    },
+  });
 
-/**
- * Moves an item from one list to another list.
- */
-const move = (
-  source: any,
-  destination: any,
-  droppableSource: any,
-  droppableDestination: any
-) => {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
+  const { mutateAsync: CreateTodo } = useMutation({
+    mutationFn: (formData: any) => CreateTodoApi(formData),
+    onSuccess(data, variables, context) {
+      messageApi.open({
+        type: "success",
+        content: "Task Create Successfuly",
+      });
+      setIsModalOpen(false);
+      form.resetFields();
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    },
+  });
 
-  destClone.splice(droppableDestination.index, 0, removed);
-
-  const result = {
-    [droppableSource.droppableId]: sourceClone,
-    [droppableDestination.droppableId]: destClone,
+  const onFinish = (values: any, type: string) => {
+    const { title, description, id, status = "todo" } = values;
+    type === "create"
+      ? CreateTodo({ title, description, status })
+      : UpdateTodo({ id, updateData: { title, description, status } });
   };
 
-  return result;
-};
-const grid = 8;
+  const onReset = () => {
+    form.resetFields();
+  };
 
-const getItemStyle = (isDragging: any, draggableStyle: any) => ({
-  // some basic styles to make the items look a bit nicer
-  userSelect: "none",
-  padding: grid * 2,
-  margin: `0 0 ${grid}px 0`,
+  const showModal = (type: "create" | "update") => {
+    type === "create" ? setModalType("create") : setModalType("update");
+    setIsModalOpen(true);
+  };
 
-  // change background colour if dragging
-  background: isDragging ? "lightgreen" : "grey",
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
 
-  // styles we need to apply on draggables
-  ...draggableStyle,
-});
-const getListStyle = (isDraggingOver: any) => ({
-  background: isDraggingOver ? "lightblue" : "lightgrey",
-  padding: grid,
-  width: 250,
-});
-
-export default function QuoteApp() {
-  const [state, setState] = useState([getItems(10), getItems(5, 10)]);
-
-  function onDragEnd(result: any) {
-    const { source, destination } = result;
-
-    // dropped outside the list
-    if (!destination) {
-      return;
-    }
-    const sInd = +source.droppableId;
-    const dInd = +destination.droppableId;
-
-    if (sInd === dInd) {
-      const items = reorder(state[sInd], source.index, destination.index);
-      const newState = [...state];
-      // @ts-ignore
-      newState[sInd] = items;
-      setState(newState);
-    } else {
-      const result = move(state[sInd], state[dInd], source, destination);
-      const newState = [...state];
-      // @ts-ignore
-      newState[sInd] = result[sInd];
-      // @ts-ignore
-      newState[dInd] = result[dInd];
-
-      setState(newState.filter((group) => group.length));
-    }
-  }
+  const TodoItem = ({
+    id,
+    title,
+    description,
+    type,
+    deleteFn,
+    updateFn,
+  }: {
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    deleteFn: (id: string) => void;
+    updateFn: (data: { id: string; updateData: any }) => void;
+  }) => {
+    return (
+      <div className="bg-boxgroundA100 py-2 px-4 rounded-lg gap-2 flex flex-col">
+        <h5 className="text-xl font-bold">{title}</h5>
+        <p>{description}</p>
+        <div className="flex flex-row gap-2 pt-4">
+          {type !== "todo" && (
+            <Button
+              type="default"
+              onClick={() =>
+                updateFn({
+                  id: id,
+                  updateData: {
+                    status: type === "doing" ? "todo" : "doing",
+                    title,
+                    description,
+                  },
+                })
+              }
+            >
+              Previous
+            </Button>
+          )}
+          {type !== "done" && (
+            <Button
+              type="default"
+              onClick={() =>
+                updateFn({
+                  id,
+                  updateData: {
+                    status: type === "todo" ? "doing" : "done",
+                    title,
+                    description,
+                  },
+                })
+              }
+            >
+              Next
+            </Button>
+          )}
+          <Button
+            onClick={() => deleteFn(id)}
+            type="link"
+            danger
+            className="ml-auto"
+          >
+            Delete
+          </Button>
+          <Button
+            onClick={() => {
+              form.setFieldsValue({
+                title,
+                description,
+                id,
+                status: type,
+              });
+              showModal("update");
+            }}
+            type="ghost"
+          >
+            Edit
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div>
-      <div style={{ display: "flex" }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          {state.map((el, ind) => (
-            <Droppable key={ind} droppableId={`${ind}`}>
-              {(provided: any, snapshot: any) => (
-                <div
-                  ref={provided.innerRef}
-                  style={getListStyle(snapshot.isDraggingOver)}
-                  {...provided.droppableProps}
-                >
-                  {el.map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided: any, snapshot: any) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={getItemStyle(
-                            snapshot.isDragging,
-                            provided.draggableProps.style
-                          )}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-around",
-                            }}
-                          >
-                            {item.content}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newState = [...state];
-                                newState[ind].splice(index, 1);
-                                setState(
-                                  newState.filter((group) => group.length)
-                                );
-                              }}
-                            >
-                              delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          ))}
-        </DragDropContext>
-      </div>
-    </div>
+    <>
+      {contextHolder}
+      <FloatButton
+        onClick={() => showModal("create")}
+        type="primary"
+        rootClassName="!w-14 !h-14"
+        icon={<SvgAdd />}
+        tooltip={<div>Add New Task</div>}
+      />
+      <Modal
+        title={`${modalType === "create" ? "Add New" : "Update"} Task`}
+        onCancel={handleCancel}
+        open={isModalOpen}
+        footer={false}
+      >
+        <Form
+          layout="vertical"
+          form={form}
+          name="control-hooks"
+          onFinish={(values) => onFinish(values, modalType)}
+          style={{ maxWidth: 600 }}
+        >
+          <Form.Item name="id" className="hidden">
+            <Input />
+          </Form.Item>
+          <Form.Item name="status" className="hidden">
+            <Input defaultValue="todo" />
+          </Form.Item>
+          <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <div className="flex flex-row gap-2 pt-10">
+              <Button type="primary" htmlType="submit">
+                Submit
+              </Button>
+              <Button htmlType="button" onClick={onReset}>
+                Reset
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <section className="grid grid-cols-3 gap-4 bg-boxgroundA700 rounded-lg p-4 h-full">
+        <div className="p-3 h-full bg-boxgroundA100 rounded-lg">
+          <h6>To-Do</h6>
+          <Divider className="bg-white" />
+          <div className="flex flex-col gap-2">
+            {data?.data
+              ?.filter((item: any) => item.status === "todo")
+              ?.map((item: any) => (
+                <TodoItem
+                  updateFn={UpdateTodo}
+                  id={item.id}
+                  deleteFn={DeleteTodo}
+                  type="todo"
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+          </div>
+        </div>
+        <div className="p-3 h-full bg-boxgroundA100 rounded-lg">
+          <h6>Doing</h6>
+          <Divider className="bg-white" />
+          <div className="flex flex-col gap-2">
+            {data?.data
+              ?.filter((item: any) => item.status === "doing")
+              ?.map((item: any) => (
+                <TodoItem
+                  updateFn={UpdateTodo}
+                  id={item.id}
+                  deleteFn={DeleteTodo}
+                  type="doing"
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+          </div>
+        </div>
+        <div className="p-3 h-full bg-boxgroundA100 rounded-lg">
+          <h6>Done</h6>
+          <Divider className="bg-white" />
+          <div className="flex flex-col gap-2">
+            {data?.data
+              ?.filter((item: any) => item.status === "done")
+              ?.map((item: any) => (
+                <TodoItem
+                  updateFn={UpdateTodo}
+                  id={item.id}
+                  deleteFn={DeleteTodo}
+                  type="done"
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

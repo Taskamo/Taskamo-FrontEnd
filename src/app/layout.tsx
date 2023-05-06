@@ -3,6 +3,7 @@
 import "./globals.scss";
 import { ConfigProvider } from "antd";
 import ReactQueryProvider from "@/providers/ReactQueryprovider";
+import { StyleProvider } from "@ant-design/cssinjs";
 
 export default function RootLayout({
   children,
@@ -27,7 +28,9 @@ export default function RootLayout({
             },
           }}
         >
-          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <StyleProvider hashPriority="high">
+            <ReactQueryProvider>{children}</ReactQueryProvider>
+          </StyleProvider>
         </ConfigProvider>
       </body>
     </html>
